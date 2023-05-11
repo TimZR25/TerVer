@@ -64,8 +64,8 @@ namespace TerVer_LB2
             Numbers = new List<double>();
             numericUpDown1.Maximum = 10000;
             numericUpDown1.Minimum = 100;
-            numericUpDown2.Maximum = numericUpDown1.Minimum;
             numericUpDown2.Minimum = 5;
+            numericUpDown2.Maximum = numericUpDown1.Minimum;
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -78,7 +78,6 @@ namespace TerVer_LB2
         {
             numericUpDown2.Maximum = numericUpDown1.Value;
             Numbers.Clear();
-            textBox1.Clear();
 
             Random random = new Random();
             double x, y;
@@ -91,19 +90,8 @@ namespace TerVer_LB2
                 } while (y > (1.5 - 0.5 * x));
                 x = Math.Round(x, 2);
                 Numbers.Add(x);
-                textBox1.Text += "(" + x.ToString() + ") ";
             }
 
-        }
-
-        private void numericUpDown1_ValueChanged(object sender, EventArgs e)
-        {
-            Selection = (int)numericUpDown1.Value;
-        }
-
-        private void numericUpDown2_ValueChanged(object sender, EventArgs e)
-        {
-            Interval = (int)numericUpDown2.Value;
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -174,10 +162,15 @@ namespace TerVer_LB2
             SampleVariance = sum / Numbers.Count; //выборочная дисперсия
 
         }
-
-        private void textBox6_TextChanged(object sender, EventArgs e)
+        private void numericUpDown1_ValueChanged(object sender, EventArgs e)
         {
+            Selection = (int)numericUpDown1.Value;
+            numericUpDown2.Maximum = numericUpDown1.Value;
+        }
 
+        private void numericUpDown2_ValueChanged(object sender, EventArgs e)
+        {
+            Interval = (int)numericUpDown2.Value;
         }
     }
 }

@@ -174,5 +174,10 @@ namespace TerVer_LB2
             SampleVariance = sum / Numbers.Count; //выборочная дисперсия
 
         }
+
+        private void textBox6_TextChanged(object sender, EventArgs e)
+        {
+
+        }
     }
 }

@@ -5,6 +5,8 @@ VisualStudioVersion = 17.3.32922.545
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TerVer_LB2", "TerVer_LB2\TerVer_LB2.csproj", "{FDEA76CF-3D90-44A5-A654-D4D9C588E1CA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TerVer_LB3", "TerVer_LB3\TerVer_LB3.csproj", "{2D60BFE3-FF38-4295-B57C-0E097CF89B4D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{FDEA76CF-3D90-44A5-A654-D4D9C588E1CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FDEA76CF-3D90-44A5-A654-D4D9C588E1CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FDEA76CF-3D90-44A5-A654-D4D9C588E1CA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D60BFE3-FF38-4295-B57C-0E097CF89B4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D60BFE3-FF38-4295-B57C-0E097CF89B4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D60BFE3-FF38-4295-B57C-0E097CF89B4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D60BFE3-FF38-4295-B57C-0E097CF89B4D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

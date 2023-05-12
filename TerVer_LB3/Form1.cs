@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using System.Windows.Forms.DataVisualization.Charting;
+using System.Drawing;
 
 namespace TerVer_LB3
 {
@@ -24,20 +25,17 @@ namespace TerVer_LB3
         private void Form1_Load(object sender, EventArgs e)
         {
             Numbers = new List<double>();
-            numericUpDown1.Maximum = 500;
-            numericUpDown1.Minimum = 50;
             numericUpDown2.Minimum = 5;
-            numericUpDown2.Maximum = numericUpDown1.Minimum;
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
             GenerateNumbers();
+            CalculateParams();
         }
 
         private void GenerateNumbers()  // Сгенерировать СВ методом усечения
         {
-            numericUpDown2.Maximum = numericUpDown1.Value;
             Numbers.Clear();
 
             Random random = new Random();
@@ -84,10 +82,122 @@ namespace TerVer_LB3
             }
         }
 
-        private void numericUpDown1_ValueChanged(object sender, EventArgs e)
+        private void CalculateParams()
         {
-            Selection = (int)numericUpDown1.Value;
-            numericUpDown2.Maximum = numericUpDown1.Value;
+            if (MathExpectation == 0 || StandardDeviation == 0) return;
+
+            double min, max, temp, S;
+            switch (Selection)
+            {
+                case 50:
+                    // Мера надежности 0.95
+                    min = Math.Round(Numbers.Average() - Math.Sqrt(Math.Pow(StandardDeviation, 2) / Selection) * 1.95996, 3);
+                    max = Math.Round(Numbers.Average() + Math.Sqrt(Math.Pow(StandardDeviation, 2) / Selection) * 1.95996, 3);
+                    textBox1.Text = "При известной дисперсии: " + min + " < m < " + max;
+
+                    temp = 0;
+                    for (int i = 0; i < Selection; i++) temp += Math.Pow(Numbers[i] - Numbers.Average(), 2);
+                    S = Math.Sqrt(temp / (Selection - 1));
+                    min = Math.Round(Numbers.Average() - S / Math.Sqrt(Selection) * 2.00957, 3);
+                    max = Math.Round(Numbers.Average() + S / Math.Sqrt(Selection) * 2.00957, 3);
+                    textBox2.Text = "При неизвестной дисперсии: " + min + " < m < " + max;
+
+                    temp = 0;
+                    for (int i = 0; i < Selection; i++) temp += Math.Pow(Numbers[i] - MathExpectation, 2);
+                    min = Math.Round(temp / 71.42019, 3);
+                    max = Math.Round(temp / 32.35736, 3);
+                    textBox3.Text = "При известном мат ожидании: " + min + " < D < " + max;
+
+                    temp = 0;
+                    for (int i = 0; i < Selection; i++) temp += Math.Pow(Numbers[i] - Numbers.Average(), 2);
+                    S = temp / (Selection-1);
+                    min = Math.Round((Selection - 1) * S / 70.22241, 3);
+                    max = Math.Round((Selection - 1) * S / 31.55491, 3);
+                    textBox4.Text = "При неизвестном мат ожидании: " + min + " < D < " + max;
+
+
+
+                    // Мера надежности 0.85
+                    min = Math.Round(Numbers.Average() - Math.Sqrt(Math.Pow(StandardDeviation, 2) / Selection) * 1.43953, 3);
+                    max = Math.Round(Numbers.Average() + Math.Sqrt(Math.Pow(StandardDeviation, 2) / Selection) * 1.43953, 3);
+                    textBox8.Text = "При известной дисперсии: " + min + " < m < " + max;
+
+                    temp = 0;
+                    for (int i = 0; i < Selection; i++) temp += Math.Pow(Numbers[i] - Numbers.Average(), 2);
+                    S = Math.Sqrt(temp / (Selection - 1));
+                    min = Math.Round(Numbers.Average() - S / Math.Sqrt(Selection) * 1.46246, 3);
+                    max = Math.Round(Numbers.Average() + S / Math.Sqrt(Selection) * 1.46246, 3);
+                    textBox7.Text = "При неизвестной дисперсии: " + min + " < m < " + max;
+
+                    temp = 0;
+                    for (int i = 0; i < Selection; i++) temp += Math.Pow(Numbers[i] - MathExpectation, 2);
+                    min = Math.Round(temp / 65.03027, 3);
+                    max = Math.Round(temp / 36.39710, 3);
+                    textBox6.Text = "При известном мат ожидании: " + min + " < D < " + max;
+
+                    temp = 0;
+                    for (int i = 0; i < Selection; i++) temp += Math.Pow(Numbers[i] - Numbers.Average(), 2);
+                    S = temp / (Selection - 1);
+                    min = Math.Round((Selection - 1) * S / 63.88477, 3);
+                    max = Math.Round((Selection - 1) * S / 35.54256, 3);
+                    textBox5.Text = "При неизвестном мат ожидании: " + min + " < D < " + max;
+                    break;
+                case 500:
+                    // Мера надежности 0.95
+                    min = Math.Round(Numbers.Average() - Math.Sqrt(Math.Pow(StandardDeviation, 2) / Selection) * 1.95996, 3);
+                    max = Math.Round(Numbers.Average() + Math.Sqrt(Math.Pow(StandardDeviation, 2) / Selection) * 1.95996, 3);
+                    textBox1.Text = "При известной дисперсии: " + min + " < m < " + max;
+
+                    temp = 0;
+                    for (int i = 0; i < Selection; i++) temp += Math.Pow(Numbers[i] - Numbers.Average(), 2);
+                    S = Math.Sqrt(temp / (Selection - 1));
+                    min = Math.Round(Numbers.Average() - S / Math.Sqrt(Selection) * 1.96473, 3);
+                    max = Math.Round(Numbers.Average() + S / Math.Sqrt(Selection) * 1.96473, 3);
+                    textBox2.Text = "При неизвестной дисперсии: " + min + " < m < " + max;
+
+                    temp = 0;
+                    for (int i = 0; i < Selection; i++) temp += Math.Pow(Numbers[i] - MathExpectation, 2);
+                    min = Math.Round(temp / 563.85153, 3);
+                    max = Math.Round(temp / 439.93599, 3);
+                    textBox3.Text = "При известном мат ожидании: " + min + " < D < " + max;
+
+                    temp = 0;
+                    for (int i = 0; i < Selection; i++) temp += Math.Pow(Numbers[i] - Numbers.Average(), 2);
+                    S = temp / (Selection - 1);
+                    min = Math.Round((Selection - 1) * S / 562.78949, 3);
+                    max = Math.Round((Selection - 1) * S / 438.99802, 3);
+                    textBox4.Text = "При неизвестном мат ожидании: " + min + " < D < " + max;
+
+
+
+                    // Мера надежности 0.85
+                    min = Math.Round(Numbers.Average() - Math.Sqrt(Math.Pow(StandardDeviation, 2) / Selection) * 1.43953, 3);
+                    max = Math.Round(Numbers.Average() + Math.Sqrt(Math.Pow(StandardDeviation, 2) / Selection) * 1.43953, 3);
+                    textBox8.Text = "При известной дисперсии: " + min + " < m < " + max;
+
+                    temp = 0;
+                    for (int i = 0; i < Selection; i++) temp += Math.Pow(Numbers[i] - Numbers.Average(), 2);
+                    S = Math.Sqrt(temp / (Selection - 1));
+                    min = Math.Round(Numbers.Average() - S / Math.Sqrt(Selection) * 1.44175, 3);
+                    max = Math.Round(Numbers.Average() + S / Math.Sqrt(Selection) * 1.44175, 3);
+                    textBox7.Text = "При неизвестной дисперсии: " + min + " < m < " + max;
+
+                    temp = 0;
+                    for (int i = 0; i < Selection; i++) temp += Math.Pow(Numbers[i] - MathExpectation, 2);
+                    min = Math.Round(temp / 546.21178, 3);
+                    max = Math.Round(temp / 455.21766, 3);
+                    textBox6.Text = "При известном мат ожидании: " + min + " < D < " + max;
+
+                    temp = 0;
+                    for (int i = 0; i < Selection; i++) temp += Math.Pow(Numbers[i] - Numbers.Average(), 2);
+                    S = temp / (Selection - 1);
+                    min = Math.Round((Selection - 1) * S / 545.16621, 3);
+                    max = Math.Round((Selection - 1) * S / 454.26323, 3);
+                    textBox5.Text = "При неизвестном мат ожидании: " + min + " < D < " + max;
+                    break;
+                default:
+                    break;
+            }
         }
 
         private void numericUpDown2_ValueChanged(object sender, EventArgs e)
@@ -103,6 +213,18 @@ namespace TerVer_LB3
         private void numericUpDown4_ValueChanged(object sender, EventArgs e)
         {
             StandardDeviation = (int)numericUpDown4.Value;
+        }
+
+        private void radioButton1_CheckedChanged(object sender, EventArgs e)
+        {
+            Selection = 50;
+            numericUpDown2.Maximum = Selection;
+        }
+
+        private void radioButton2_CheckedChanged(object sender, EventArgs e)
+        {
+            Selection = 500;
+            numericUpDown2.Maximum = Selection;
         }
     }
 }

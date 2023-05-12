@@ -2,9 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
-using System.Windows.Forms.DataVisualization.Charting;
-using System.Drawing;
 
 namespace TerVer_LB3
 {
@@ -65,9 +62,10 @@ namespace TerVer_LB3
 
             Numbers.Sort();
 
-            int interval = (int)Math.Ceiling(1 + 3.322 * Math.Log10(Numbers.Count)); // интервалам определенный по правилу Стѐрджеса
+            int interval = (int)Math.Ceiling(1 + 3.322 * Math.Log10(Numbers.Count)); // интервал определенный по правилу Стѐрджеса
 
             int numsInColumn = Numbers.Count / interval; // кол-во чисел на один столбик
+
             for (int i = 0; i < interval; i++)
             {
                 double sum = 0;
@@ -110,7 +108,7 @@ namespace TerVer_LB3
 
                     temp = 0;
                     for (int i = 0; i < Selection; i++) temp += Math.Pow(Numbers[i] - Numbers.Average(), 2);
-                    S = temp / (Selection-1);
+                    S = temp / (Selection - 1);
                     min = Math.Round((Selection - 1) * S / 70.22241, 3);
                     max = Math.Round((Selection - 1) * S / 31.55491, 3);
                     textBox4.Text = "При неизвестном мат ожидании: " + min + " < D < " + max;

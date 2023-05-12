@@ -12,7 +12,6 @@ namespace TerVer_LB3
     {
         private List<double> Numbers; // СВ
         private int Selection; // выборка
-        private int Interval; // интервал
         private int MathExpectation; // мат ожидание
         private int StandardDeviation; // среднеквадратичное отклонение
 
@@ -25,13 +24,12 @@ namespace TerVer_LB3
         private void Form1_Load(object sender, EventArgs e)
         {
             Numbers = new List<double>();
-            numericUpDown2.Minimum = 5;
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
             GenerateNumbers();
-            CalculateParams();
+            CalculateParameters();
         }
 
         private void GenerateNumbers()  // Сгенерировать СВ методом усечения
@@ -67,8 +65,10 @@ namespace TerVer_LB3
 
             Numbers.Sort();
 
-            int numsInColumn = Numbers.Count / Interval;
-            for (int i = 0; i < Interval; i++)
+            int interval = (int)Math.Ceiling(1 + 3.322 * Math.Log10(Numbers.Count)); // интервалам определенный по правилу Стѐрджеса
+
+            int numsInColumn = Numbers.Count / interval; // кол-во чисел на один столбик
+            for (int i = 0; i < interval; i++)
             {
                 double sum = 0;
                 for (int j = 0; j < numsInColumn; j++)
@@ -82,7 +82,7 @@ namespace TerVer_LB3
             }
         }
 
-        private void CalculateParams()
+        private void CalculateParameters()
         {
             if (MathExpectation == 0 || StandardDeviation == 0) return;
 
@@ -200,11 +200,6 @@ namespace TerVer_LB3
             }
         }
 
-        private void numericUpDown2_ValueChanged(object sender, EventArgs e)
-        {
-            Interval = (int)numericUpDown2.Value;
-        }
-
         private void numericUpDown3_ValueChanged(object sender, EventArgs e)
         {
             MathExpectation = (int)numericUpDown3.Value;
@@ -218,13 +213,11 @@ namespace TerVer_LB3
         private void radioButton1_CheckedChanged(object sender, EventArgs e)
         {
             Selection = 50;
-            numericUpDown2.Maximum = Selection;
         }
 
         private void radioButton2_CheckedChanged(object sender, EventArgs e)
         {
             Selection = 500;
-            numericUpDown2.Maximum = Selection;
         }
     }
 }

@@ -107,25 +107,29 @@ namespace TerVer_LB2
 
             Numbers.Sort();
 
-            int numsInColumn = Numbers.Count / Interval;
+            double min = Numbers.Min();
+            double max = Numbers.Max();
+
+            double intervalLength = (max - min) / Interval;
+
+            int j = 0;
             for (int i = 0; i < Interval; i++)
             {
-                double sum = 0;
-                for (int j = 0; j < numsInColumn; j++)
+                int numsInColumn = 0;
+                double rightBorder = min + (i+1) * intervalLength;
+
+                for (; j < Numbers.Count && Numbers[j] <= rightBorder; j++)
                 {
-                    sum += Numbers[j + i * numsInColumn];
+                    numsInColumn++;
                 }
-                double x = sum / numsInColumn;
-                double y = 1.5 - 0.5 * x;
-                x = Math.Round(x, 3);
-                chart1.Series[0].Points.AddXY(x, y);
+
+                chart1.Series[0].Points.AddXY(min + (i + 0.5) * intervalLength, numsInColumn / (Numbers.Count * intervalLength));
             }
         }
 
         private void CalculateParameters() // Находит параметры СВ
         {
             Average = Numbers.Sum() / Numbers.Count; // среднее
-
 
             Median = Numbers.Count % 2 == 0 ?
                 (Numbers[Numbers.Count / 2] + Numbers[Numbers.Count / 2 - 1]) / 2

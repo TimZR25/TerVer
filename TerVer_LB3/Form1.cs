@@ -27,6 +27,8 @@ namespace TerVer_LB3
         {
             GenerateNumbers();
             CalculateParameters();
+            Microsoft.Office.Interop.Excel.Application _ex = new Microsoft.Office.Interop.Excel.Application();
+            textBox1.Text = _ex.WorksheetFunction.ChiInv(1 - 0.95 / 2, Selection).ToString();
         }
 
         private void GenerateNumbers()  // Сгенерировать СВ методом усечения
@@ -47,7 +49,6 @@ namespace TerVer_LB3
                 Math.Round(x, 2);
                 Numbers.Add(x);
             }
-
         }
 
         private void button2_Click(object sender, EventArgs e)

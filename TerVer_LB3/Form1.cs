@@ -65,19 +65,23 @@ namespace TerVer_LB3
 
             int interval = (int)Math.Ceiling(1 + 3.322 * Math.Log10(Numbers.Count)); // интервал определенный по правилу Стѐрджеса
 
-            int numsInColumn = Numbers.Count / interval; // кол-во чисел на один столбик
+            double min = Numbers.Min();
+            double max = Numbers.Max();
 
+            double intervalLength = (max - min) / interval;
+
+            int j = 0;
             for (int i = 0; i < interval; i++)
             {
-                double sum = 0;
-                for (int j = 0; j < numsInColumn; j++)
+                int numsInColumn = 0;
+                double rightBorder = min + (i + 1) * intervalLength;
+
+                for (; j < Numbers.Count && Numbers[j] <= rightBorder; j++)
                 {
-                    sum += Numbers[j + i * numsInColumn];
+                    numsInColumn++;
                 }
-                double x = sum / numsInColumn;
-                double y = 1 / (StandardDeviation * Math.Sqrt(2 * Math.PI)) * Math.Exp(-Math.Pow(x - MathExpectation, 2) / (2 * Math.Pow(StandardDeviation, 2)));
-                x = Math.Round(x, 3);
-                chart1.Series[0].Points.AddXY(x, y);
+
+                chart1.Series[0].Points.AddXY(min + (i + 0.5) * intervalLength, numsInColumn / (Numbers.Count * intervalLength));
             }
         }
 

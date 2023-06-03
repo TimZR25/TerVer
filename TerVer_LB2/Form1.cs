@@ -91,7 +91,6 @@ namespace TerVer_LB2
                 x = Math.Round(x, 2);
                 Numbers.Add(x);
             }
-
         }
 
         private void button2_Click(object sender, EventArgs e)

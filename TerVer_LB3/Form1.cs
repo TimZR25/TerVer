@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Web;
 using System.Windows.Forms;
 
 namespace TerVer_LB3
@@ -27,13 +29,27 @@ namespace TerVer_LB3
         {
             GenerateNumbers();
             CalculateParameters();
-            Microsoft.Office.Interop.Excel.Application _ex = new Microsoft.Office.Interop.Excel.Application();
-            textBox1.Text = _ex.WorksheetFunction.ChiInv(1 - 0.95 / 2, Selection).ToString();
+            DrawHistogram();
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            switch (Selection)
+            {
+                case 50:
+                    NumbersToFile("50.txt");
+                    break;
+                case 500:
+                    NumbersToFile("500.txt");
+                    break;
+                default:
+                    break;
+            }
         }
 
         private void GenerateNumbers()  // Сгенерировать СВ методом усечения
         {
-            Numbers.Clear();
+            if (Selection <= 0 || StandardDeviation <= 0 || MathExpectation <= 0) return;
 
             Random random = new Random();
             double x, N = 20;
@@ -46,27 +62,38 @@ namespace TerVer_LB3
                 }
                 x = (sum - N / 2) / Math.Sqrt(N / 12);
                 x = x * StandardDeviation + MathExpectation;
-                Math.Round(x, 2);
                 Numbers.Add(x);
             }
         }
 
-        private void button2_Click(object sender, EventArgs e)
+        private void NumbersToFile(string path)
         {
-            if (Numbers.Count == 0) return;
-            DrawHistogram();
+            string str = "";
+            for (int i = 0; i < Numbers.Count; i++)
+            {
+                str += Numbers[i].ToString() + Environment.NewLine;
+            }
+            File.WriteAllText(path, str);
         }
 
         private void DrawHistogram() // Нарисовать гистограмму 
         {
+            if (Numbers.Count == 0) return;
+
             chart1.Series[0].Points.Clear();
 
-            Numbers.Sort();
+            List<double> numbers = new List<double>();
+            foreach (double item in Numbers)
+            {
+                numbers.Add(item);
+            }
+            numbers.Sort();
 
-            int interval = (int)Math.Ceiling(1 + 3.322 * Math.Log10(Numbers.Count)); // интервал определенный по правилу Стѐрджеса
 
-            double min = Numbers.Min();
-            double max = Numbers.Max();
+            int interval = (int)Math.Ceiling(1 + 3.322 * Math.Log10(numbers.Count)); // интервал определенный по правилу Стѐрджеса
+
+            double min = numbers.Min();
+            double max = numbers.Max();
 
             double intervalLength = (max - min) / interval;
 
@@ -76,12 +103,12 @@ namespace TerVer_LB3
                 int numsInColumn = 0;
                 double rightBorder = min + (i + 1) * intervalLength;
 
-                for (; j < Numbers.Count && Numbers[j] <= rightBorder; j++)
+                for (; j < numbers.Count && numbers[j] <= rightBorder; j++)
                 {
                     numsInColumn++;
                 }
 
-                chart1.Series[0].Points.AddXY(min + (i + 0.5) * intervalLength, numsInColumn / (Numbers.Count * intervalLength));
+                chart1.Series[0].Points.AddXY(min + (i + 0.5) * intervalLength, numsInColumn / (numbers.Count * intervalLength));
             }
         }
 
@@ -89,118 +116,67 @@ namespace TerVer_LB3
         {
             if (MathExpectation == 0 || StandardDeviation == 0) return;
 
-            double min, max, temp, S;
-            switch (Selection)
-            {
-                case 50:
-                    // Мера надежности 0.95
-                    min = Math.Round(Numbers.Average() - Math.Sqrt(Math.Pow(StandardDeviation, 2) / Selection) * 1.95996, 3);
-                    max = Math.Round(Numbers.Average() + Math.Sqrt(Math.Pow(StandardDeviation, 2) / Selection) * 1.95996, 3);
-                    textBox1.Text = "При известной дисперсии: " + min + " < m < " + max;
-
-                    temp = 0;
-                    for (int i = 0; i < Selection; i++) temp += Math.Pow(Numbers[i] - Numbers.Average(), 2);
-                    S = Math.Sqrt(temp / (Selection - 1));
-                    min = Math.Round(Numbers.Average() - S / Math.Sqrt(Selection) * 2.00957, 3);
-                    max = Math.Round(Numbers.Average() + S / Math.Sqrt(Selection) * 2.00957, 3);
-                    textBox2.Text = "При неизвестной дисперсии: " + min + " < m < " + max;
-
-                    temp = 0;
-                    for (int i = 0; i < Selection; i++) temp += Math.Pow(Numbers[i] - MathExpectation, 2);
-                    min = Math.Round(temp / 71.42019, 3);
-                    max = Math.Round(temp / 32.35736, 3);
-                    textBox3.Text = "При известном мат ожидании: " + min + " < D < " + max;
-
-                    temp = 0;
-                    for (int i = 0; i < Selection; i++) temp += Math.Pow(Numbers[i] - Numbers.Average(), 2);
-                    S = temp / (Selection - 1);
-                    min = Math.Round((Selection - 1) * S / 70.22241, 3);
-                    max = Math.Round((Selection - 1) * S / 31.55491, 3);
-                    textBox4.Text = "При неизвестном мат ожидании: " + min + " < D < " + max;
+            double min, max, S, delta, gamma, chi1, chi2;
+            Microsoft.Office.Interop.Excel.Application ex = new Microsoft.Office.Interop.Excel.Application();
 
 
+            gamma = 0.95; // Мера надежности 0.95
+            //---------------Доверительный интервал для мат ожидания---------------
+            delta = ex.WorksheetFunction.NormSInv(gamma / 2 + 0.5) * StandardDeviation / Math.Sqrt(Selection);
+            min = Numbers.Average() - delta;
+            max = Numbers.Average() + delta;
+            textBox1.Text = "Мат ожидание при известной дисперсии:" + Environment.NewLine + min + " < m < " + max;
 
-                    // Мера надежности 0.85
-                    min = Math.Round(Numbers.Average() - Math.Sqrt(Math.Pow(StandardDeviation, 2) / Selection) * 1.43953, 3);
-                    max = Math.Round(Numbers.Average() + Math.Sqrt(Math.Pow(StandardDeviation, 2) / Selection) * 1.43953, 3);
-                    textBox8.Text = "При известной дисперсии: " + min + " < m < " + max;
+            S = Math.Pow(StandardDeviation, 2) * (Selection / (Selection - 1)); // выборочная дисперсия
+            delta = ex.WorksheetFunction.TInv(1 - gamma, Selection - 1) * Math.Sqrt(S / Selection);
+            min = Numbers.Average() - delta;
+            max = Numbers.Average() + delta;
+            textBox2.Text = "Мат ожидание при неизвестной дисперсии:" + Environment.NewLine + min + " < m < " + max;
+            
 
-                    temp = 0;
-                    for (int i = 0; i < Selection; i++) temp += Math.Pow(Numbers[i] - Numbers.Average(), 2);
-                    S = Math.Sqrt(temp / (Selection - 1));
-                    min = Math.Round(Numbers.Average() - S / Math.Sqrt(Selection) * 1.46246, 3);
-                    max = Math.Round(Numbers.Average() + S / Math.Sqrt(Selection) * 1.46246, 3);
-                    textBox7.Text = "При неизвестной дисперсии: " + min + " < m < " + max;
+            //---------------Доверительный интервал для дисперсии---------------
+            chi1 = ex.WorksheetFunction.ChiInv((1 - gamma) / 2, Selection);
+            chi2 = ex.WorksheetFunction.ChiInv(1 - (1 - gamma) / 2, Selection);
+            min = Selection * Math.Pow(StandardDeviation, 2) / chi1;
+            max = Selection * Math.Pow(StandardDeviation, 2) / chi2;
+            textBox3.Text = "Дисперсия при известном мат ожидании:" + Environment.NewLine + min + " < D < " + max;
 
-                    temp = 0;
-                    for (int i = 0; i < Selection; i++) temp += Math.Pow(Numbers[i] - MathExpectation, 2);
-                    min = Math.Round(temp / 65.03027, 3);
-                    max = Math.Round(temp / 36.39710, 3);
-                    textBox6.Text = "При известном мат ожидании: " + min + " < D < " + max;
-
-                    temp = 0;
-                    for (int i = 0; i < Selection; i++) temp += Math.Pow(Numbers[i] - Numbers.Average(), 2);
-                    S = temp / (Selection - 1);
-                    min = Math.Round((Selection - 1) * S / 63.88477, 3);
-                    max = Math.Round((Selection - 1) * S / 35.54256, 3);
-                    textBox5.Text = "При неизвестном мат ожидании: " + min + " < D < " + max;
-                    break;
-                case 500:
-                    // Мера надежности 0.95
-                    min = Math.Round(Numbers.Average() - Math.Sqrt(Math.Pow(StandardDeviation, 2) / Selection) * 1.95996, 3);
-                    max = Math.Round(Numbers.Average() + Math.Sqrt(Math.Pow(StandardDeviation, 2) / Selection) * 1.95996, 3);
-                    textBox1.Text = "При известной дисперсии: " + min + " < m < " + max;
-
-                    temp = 0;
-                    for (int i = 0; i < Selection; i++) temp += Math.Pow(Numbers[i] - Numbers.Average(), 2);
-                    S = Math.Sqrt(temp / (Selection - 1));
-                    min = Math.Round(Numbers.Average() - S / Math.Sqrt(Selection) * 1.96473, 3);
-                    max = Math.Round(Numbers.Average() + S / Math.Sqrt(Selection) * 1.96473, 3);
-                    textBox2.Text = "При неизвестной дисперсии: " + min + " < m < " + max;
-
-                    temp = 0;
-                    for (int i = 0; i < Selection; i++) temp += Math.Pow(Numbers[i] - MathExpectation, 2);
-                    min = Math.Round(temp / 563.85153, 3);
-                    max = Math.Round(temp / 439.93599, 3);
-                    textBox3.Text = "При известном мат ожидании: " + min + " < D < " + max;
-
-                    temp = 0;
-                    for (int i = 0; i < Selection; i++) temp += Math.Pow(Numbers[i] - Numbers.Average(), 2);
-                    S = temp / (Selection - 1);
-                    min = Math.Round((Selection - 1) * S / 562.78949, 3);
-                    max = Math.Round((Selection - 1) * S / 438.99802, 3);
-                    textBox4.Text = "При неизвестном мат ожидании: " + min + " < D < " + max;
+            S = Math.Pow(StandardDeviation, 2) * (Selection / (Selection - 1)); // выборочная дисперсия
+            chi1 = ex.WorksheetFunction.ChiInv((1 - gamma) / 2, Selection - 1);
+            chi2 = ex.WorksheetFunction.ChiInv(1 - (1 - gamma) / 2, Selection - 1);
+            min = (Selection - 1) * S / chi1;
+            max = (Selection - 1) * S / chi2;
+            textBox4.Text = "Дисперсия при неизвестном мат ожидании:" + Environment.NewLine + min + " < D < " + max;
 
 
 
-                    // Мера надежности 0.85
-                    min = Math.Round(Numbers.Average() - Math.Sqrt(Math.Pow(StandardDeviation, 2) / Selection) * 1.43953, 3);
-                    max = Math.Round(Numbers.Average() + Math.Sqrt(Math.Pow(StandardDeviation, 2) / Selection) * 1.43953, 3);
-                    textBox8.Text = "При известной дисперсии: " + min + " < m < " + max;
+            gamma = 0.85; // Мера надежности 0.85
+            //---------------Доверительный интервал для мат ожидания---------------
+            delta = ex.WorksheetFunction.NormSInv(gamma / 2 + 0.5) * StandardDeviation / Math.Sqrt(Selection);
+            min = Numbers.Average() - delta;
+            max =Numbers.Average() + delta;
+            textBox8.Text = "Мат ожидание при известной дисперсии:" + Environment.NewLine + min + " < m < " + max;
 
-                    temp = 0;
-                    for (int i = 0; i < Selection; i++) temp += Math.Pow(Numbers[i] - Numbers.Average(), 2);
-                    S = Math.Sqrt(temp / (Selection - 1));
-                    min = Math.Round(Numbers.Average() - S / Math.Sqrt(Selection) * 1.44175, 3);
-                    max = Math.Round(Numbers.Average() + S / Math.Sqrt(Selection) * 1.44175, 3);
-                    textBox7.Text = "При неизвестной дисперсии: " + min + " < m < " + max;
+            S = Math.Pow(StandardDeviation, 2) * (Selection / (Selection - 1)); // выборочная дисперсия
+            delta = ex.WorksheetFunction.TInv(1 - gamma, Selection - 1) * Math.Sqrt(S / Selection);
+            min = Numbers.Average() - delta;
+            max = Numbers.Average() + delta;
+            textBox7.Text = "Мат ожидание при неизвестной дисперсии:" + Environment.NewLine + min + " < m < " + max;
 
-                    temp = 0;
-                    for (int i = 0; i < Selection; i++) temp += Math.Pow(Numbers[i] - MathExpectation, 2);
-                    min = Math.Round(temp / 546.21178, 3);
-                    max = Math.Round(temp / 455.21766, 3);
-                    textBox6.Text = "При известном мат ожидании: " + min + " < D < " + max;
 
-                    temp = 0;
-                    for (int i = 0; i < Selection; i++) temp += Math.Pow(Numbers[i] - Numbers.Average(), 2);
-                    S = temp / (Selection - 1);
-                    min = Math.Round((Selection - 1) * S / 545.16621, 3);
-                    max = Math.Round((Selection - 1) * S / 454.26323, 3);
-                    textBox5.Text = "При неизвестном мат ожидании: " + min + " < D < " + max;
-                    break;
-                default:
-                    break;
-            }
+            //---------------Доверительный интервал для дисперсии---------------
+            chi1 = ex.WorksheetFunction.ChiInv((1 - gamma) / 2, Selection);
+            chi2 = ex.WorksheetFunction.ChiInv(1 - (1 - gamma) / 2, Selection);
+            min = Selection * Math.Pow(StandardDeviation, 2) / chi1;
+            max = Selection * Math.Pow(StandardDeviation, 2) / chi2;
+            textBox6.Text = "Дисперсия при известном мат ожидании:" + Environment.NewLine + min + " < D < " + max;
+
+            S = Math.Pow(StandardDeviation, 2) * (Selection / (Selection - 1)); // выборочная дисперсия
+            chi1 = ex.WorksheetFunction.ChiInv((1 - gamma) / 2, Selection - 1);
+            chi2 = ex.WorksheetFunction.ChiInv(1 - (1 - gamma) / 2, Selection - 1);
+            min = (Selection - 1) * S / chi1;
+            max = (Selection - 1) * S / chi2;
+            textBox5.Text = "Дисперсия при неизвестном мат ожидании:" + Environment.NewLine + min + " < D < " + max;
         }
 
         private void numericUpDown3_ValueChanged(object sender, EventArgs e)

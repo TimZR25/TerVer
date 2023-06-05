@@ -63,7 +63,6 @@ namespace TerVer_RGR
                     y = random.NextDouble();
                     x = random.NextDouble() * 2 + 1;
                 } while (y > (1.5 - 0.5 * x));
-                x = Math.Round(x, 2);
                 numbers.Add(x);
             }
         }

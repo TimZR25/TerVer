@@ -1,15 +1,23 @@
-﻿using System;
+﻿using Microsoft.Office.Interop.Excel;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net.Http.Headers;
+using System.Reflection.Emit;
 using System.Windows.Forms;
+using Chart = System.Windows.Forms.DataVisualization.Charting.Chart;
+using Label = System.Windows.Forms.Label;
 
 namespace TerVer_RGR
 {
     public partial class Form1 : Form
     {
         private int Selection; // выборка
-        private List<double> Numbers; // СВ
+        private List<double> Numbers1; // СВ 1
+        private List<double> Numbers2; // СВ 2
         private int Interval; // интервал
+        private Random random;
 
         public Form1()
         {
@@ -18,7 +26,9 @@ namespace TerVer_RGR
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            Numbers = new List<double>();
+            Numbers1 = new List<double>();
+            Numbers2 = new List<double>();
+            random = new Random();
             numericUpDown1.Maximum = 10000;
             numericUpDown1.Minimum = 50;
             numericUpDown2.Minimum = 5;
@@ -27,17 +37,24 @@ namespace TerVer_RGR
 
         private void button1_Click(object sender, EventArgs e)
         {
-            GenerateNumbers();
-            DrawHistogram();
+            GenerateNumbers(Numbers1);
+            GenerateNumbers(Numbers2);
+            NumbersToFile(Numbers1, 1);
+            NumbersToFile(Numbers2, 2);
         }
 
-        private void GenerateNumbers()  // Сгенерировать СВ методом усечения
+        private void button2_Click(object sender, EventArgs e)
         {
-            Numbers.Clear();
+            DrawHistogram(Numbers1, chart1, label3);
+            DrawHistogram(Numbers2, chart2, label4);
+        }
+
+        private void GenerateNumbers(List<double> numbers)  // Сгенерировать СВ методом усечения
+        {
+            numbers.Clear();
 
             if (Selection <= 0) return;
 
-            Random random = new Random();
             double x, y;
             for (int i = 0; i < Selection; i++) // генерация СВ методом усечения
             {
@@ -47,27 +64,34 @@ namespace TerVer_RGR
                     x = random.NextDouble() * 2 + 1;
                 } while (y > (1.5 - 0.5 * x));
                 x = Math.Round(x, 2);
-                Numbers.Add(x);
+                numbers.Add(x);
             }
         }
 
-        private void button2_Click(object sender, EventArgs e)
+        private void NumbersToFile(List<double> numbers, int n)
         {
-            if (Numbers.Count == 0) return;
+            if (Selection <= 0) return;
 
-            DrawHistogram();
+            string str = "";
+            for (int i = 0; i < numbers.Count; i++)
+            {
+                str += numbers[i].ToString() + Environment.NewLine;
+            }
+            File.WriteAllText("Выборка" + "№" + n.ToString() + ".txt", str);
         }
 
-        private void DrawHistogram() // Нарисовать гистограмму 
+        private void DrawHistogram(List<double> numbers, Chart chart, Label label) // Нарисовать гистограмму 
         {
-            chart1.Series[0].Points.Clear();
+            chart.Series[0].Points.Clear();
 
-            if (Numbers.Count == 0) return;
+            if (numbers.Count == 0) return;
 
-            Numbers.Sort();
+            if (numbers.Count < Interval) return;
 
-            double min = Numbers.Min();
-            double max = Numbers.Max();
+            numbers.Sort();
+
+            double min = numbers.Min();
+            double max = numbers.Max();
 
             double intervalLength = (max - min) / Interval;
 
@@ -78,18 +102,18 @@ namespace TerVer_RGR
                 int numsInColumn = 0;
                 double rightBorder = min + (i + 1) * intervalLength;
 
-                for (; j < Numbers.Count && Numbers[j] <= rightBorder; j++)
+                for (; j < numbers.Count && numbers[j] <= rightBorder; j++)
                 {
                     numsInColumn++;
                 }
 
-                
-                xi += Math.Pow(numsInColumn - Numbers.Count / Interval, 2) / (Numbers.Count / Interval);
-                chart1.Series[0].Points.AddXY(min + (i + 0.5) * intervalLength, numsInColumn / (Numbers.Count * intervalLength));
+
+                //xi += Math.Pow(numsInColumn - numbers.Count / Interval, 2) / (numbers.Count / Interval);
+                xi += Math.Pow(numsInColumn - numbers.Count * (rightBorder - min + i * intervalLength), 2) / (numbers.Count * (rightBorder - min + i * intervalLength));
+
+                chart.Series[0].Points.AddXY(min + (i + 0.5) * intervalLength, numsInColumn / (numbers.Count * intervalLength));
             }
-            label1.Text = xi.ToString();
-            Microsoft.Office.Interop.Excel.Application ex = new Microsoft.Office.Interop.Excel.Application();
-            label2.Text = ex.WorksheetFunction.ChiInv(1-0.95, Numbers.Count - 1).ToString();
+            label.Text = "χ^2: " + xi.ToString();
         }
 
         private void numericUpDown1_ValueChanged(object sender, EventArgs e)

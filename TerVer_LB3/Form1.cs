@@ -47,13 +47,15 @@ namespace TerVer_LB3
             }
         }
 
-        private void GenerateNumbers()  // Сгенерировать СВ методом усечения
+        private void GenerateNumbers()  // Сгенерировать СВ
         {
             if (Selection <= 0 || StandardDeviation <= 0 || MathExpectation <= 0) return;
 
+            Numbers.Clear();
+
             Random random = new Random();
             double x, N = 20;
-            for (int i = 0; i < Selection; i++) // генерация СВ методом усечения
+            for (int i = 0; i < Selection; i++) // генерация СВ
             {
                 double sum = 0;
                 for (int j = 0; j < N; j++)
